@@ -38,13 +38,13 @@ bool ply_to_embedding(string file_name, vector<vector<double>>& vertices, vector
 
             getline(my_file, line);
 
-            // Checks ply file format
-            if (!line.substr(0, 6).compare("format")) {
-                if (line.substr(7, 12).compare("ascii")) {
-                    cerr << "ERROR - The PLY file is not ascii format." << endl;
-                    return false;
-                }
-            }//endif
+            // // Checks ply file format
+            // if (!line.substr(0, 6).compare("format")) {
+            //     if (line.substr(7, 12).compare("ascii")) {
+            //         cerr << "ERROR - The PLY file is not ascii format." << endl;
+            //         return false;
+            //     }
+            // }//endif
 
             // Checks vertex count
             if (!line.substr(0, 14).compare("element vertex")) {
