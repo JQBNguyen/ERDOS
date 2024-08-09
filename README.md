@@ -5,8 +5,9 @@ ERDOS (Eulerian Routing of DNA Origami Scaffolds) is a program used for the auto
 The program takes a PLY file and a shape name (as a string) as command line arguments or user input. The output is a TXT file of the A-trail as a list of vertices, indexed at 1, separated by whitespace.
 
 ## Compilation
-Windows: Use the provided Makefile or CMake file.
-macOS/Linux: Use the provided CMake file.
+Windows: Use the provided Makefile or CMake file.  
+
+macOS/Linux: Use the provided CMake file.  
 
 The files can also be compiled manually.
 
