@@ -1,10 +1,13 @@
 #include <vector>
-#include <map>
 #include <algorithm>
 #include <set>
 #include <stack>
-
+#include <chrono>
 #include "cc_embedded_graph.h"
+
+int iterationCount = 0;
+auto start = chrono::high_resolution_clock::now();
+const int interval = 1000;
 
 /*
  * Depth-first search on graph to check for cycles
@@ -15,7 +18,7 @@
  * @param covering_tree Graph to search
  * @return Whether a cycle is present.
  */
-bool dfs_cycle(int v, map<int, bool>& visited, int parent, map<int, vector<int>>& covering_tree) {
+bool dfs_cycle(int v, vector<bool>& visited, int parent, vector<vector<int>>& covering_tree) {
     visited[v] = true;
     for (int i = 0; i < covering_tree[v].size(); ++i) {
         if (!visited[covering_tree[v][i]]) {
@@ -36,22 +39,14 @@ bool dfs_cycle(int v, map<int, bool>& visited, int parent, map<int, vector<int>>
  * @param covering_tree Graph to search
  * @return Whether a cycle is present.
  */
-bool test_for_cycle(map<int, vector<int>>& covering_tree) {
-    map<int, bool> visited;
-    for_each(covering_tree.begin(), covering_tree.end(), [&visited](pair<int, vector<int>> p) {
-        visited[p.first] = false;
-    }); //endfor
-    vector<int> covering_tree_v;
-    for (auto i : covering_tree) {
-        covering_tree_v.push_back(i.first);
-    } //endfor
-    for (int i = 0; i < covering_tree_v.size(); ++i) {
-        if (!visited[covering_tree_v[i]]) {
-            if (dfs_cycle(covering_tree_v[i], visited, -1, covering_tree)) {
-                return true;
-            } //endif
+bool test_for_cycle(vector<vector<int>>& covering_tree) {
+    vector<bool> visited(covering_tree.size(), false);
+    for (int i = 0; i < covering_tree.size(); ++i) {
+        if (!visited[i]) {
+            if (dfs_cycle(i, visited, -1, covering_tree)) return true;
         } //endif
     } //endfor
+
     return false;
 }
 
@@ -62,28 +57,26 @@ bool test_for_cycle(map<int, vector<int>>& covering_tree) {
  * @param v Starting vertex
  * @return Whether graph is connected
  */
-bool is_connected(map<int, vector<int>>& covering_tree, int v) {
-    set<int> visited;
+bool is_connected(vector<vector<int>>& covering_tree, int v) {
+    vector<bool> visited(covering_tree.size(), false);
     stack<int> stack;
     stack.push(v);
 
     while (!stack.empty()) {
         int ver = stack.top();
         stack.pop();
-        if(find_if(visited.begin(), visited.end(), [&ver](int i) {
-            return ver == i;
-        }) == visited.end()) {
-            visited.insert(ver);
+
+        if (!visited[ver]) {
+            visited[ver] = true;
         } //endif
-        for_each(covering_tree[ver].begin(), covering_tree[ver].end(), [&visited, &stack](int j) {
-            if (find_if(visited.begin(), visited.end(), [&j](int i) {
-                return j == i;
-            }) == visited.end())  {
-                stack.push(j);
-            } //endif
-        }); //endfor
+
+        for (int i = 0; i < covering_tree[ver].size(); ++i) {
+            if (!visited[covering_tree[ver][i]]) stack.push(covering_tree[ver][i]);
+        } //endfor
+
     } //endwhile
-    return visited.size() == covering_tree.size();
+
+    return count(visited.begin(), visited.end(), true) == covering_tree.size();
 }
 
 /*
@@ -95,31 +88,47 @@ bool is_connected(map<int, vector<int>>& covering_tree, int v) {
  * @param covering_tree Covering tree to create
  * @return Whether or not the covering tree covers all colored faces of interest
  */
-bool full_tree_test(CC_Embedded_Graph &eg, vector<int>& ver_stack, int face_color, map<int, vector<int>>& covering_tree) {
-    int vertex_face_num = eg.getVertexCount();
-    vector<Face> color_face_list;
+bool full_tree_test(CC_Embedded_Graph &eg, vector<int>& ver_stack, int face_color, vector<vector<int>>& covering_tree, vector<int>& v_order) {
+    int vertex_face_num = ver_stack.size();
+
+    vector<vector<int>> face_vertices;
+    int color_face_count;
     if (face_color) {
-        color_face_list = eg.getRedFaces();
+        face_vertices = eg.getRedFaceV();
+        vector<Face> red_faces = eg.getRedFaces();
+        color_face_count = red_faces.size();
     }
     else {
-        color_face_list = eg.getBlueFaces();
-    } //endif
-    for (int i = 0; i < color_face_list.size(); ++i) {
-        bool covered = false;
-        for (int j = 0; j < ver_stack.size(); ++j) {
-            if (color_face_list[i].containsV(ver_stack[j])) {
-                covering_tree[ver_stack[j]].push_back(vertex_face_num);
-                covering_tree[vertex_face_num].push_back(ver_stack[j]);
-                covered = true;
-            } //endif
-        } //endfor
-        if (covered) {
-//            cout << "Covers" << color_face_list[i];
-            ++vertex_face_num;
-        } //endif
-    } //endfor
+        face_vertices = eg.getBlueFaceV();
+        vector<Face> blue_faces = eg.getBlueFaces();
+        color_face_count = blue_faces.size();
+    }
 
-    if ((vertex_face_num == (eg.getVertexCount() + color_face_list.size())) && is_connected(covering_tree, ver_stack[0])) {
+    covering_tree = vector<vector<int>>(vertex_face_num + color_face_count);
+
+    for (int i = 0; i < ver_stack.size(); ++i) {
+        for (int j = 0; j < face_vertices[v_order[ver_stack[i]]].size(); ++j) {
+            covering_tree[i].push_back(vertex_face_num + face_vertices[v_order[ver_stack[i]]][j]);
+            covering_tree[vertex_face_num + face_vertices[v_order[ver_stack[i]]][j]].push_back(i);
+        }
+    }
+
+    covering_tree.erase(remove_if(covering_tree.begin(), covering_tree.end(), [](const vector<int>& v) {
+        return v.empty();
+    }), covering_tree.end());
+
+    for (int i = 0; i < ver_stack.size(); ++i) {
+        covering_tree[i].clear(); // Clear Vertex-to-Face lists for refactoring
+    }
+
+    for (int i = ver_stack.size(); i < covering_tree.size(); ++i) {
+        for (int j = 0; j < covering_tree[i].size(); ++j) {
+            covering_tree[covering_tree[i][j]].push_back(i);
+        }
+    }
+
+
+    if ((covering_tree.size() == (ver_stack.size() + face_vertices.size())) && is_connected(covering_tree, ver_stack[0])) {
         return true;
     }
     else {
@@ -136,22 +145,31 @@ bool full_tree_test(CC_Embedded_Graph &eg, vector<int>& ver_stack, int face_colo
  * @param ver_stack Covering tree vertices
  * @param face_color Face color to consider
  * @param v_order BFS vertex ordering
- * @return bool Facilitates  branch-bound decision making.
+ * @return bool Facilitates  branch-bound decision-making.
  */
 bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver_stack, int face_color, vector<int>& v_order) {
+    // Time
+    ++iterationCount;
+//    if (iterationCount % interval == 0) {
+//        cout << iterationCount << ": ";
+//        auto end = chrono::high_resolution_clock::now();
+//        auto time = chrono::duration_cast<chrono::milliseconds>(end - start);
+//        cout << time.count() << "ms" << endl;
+//        start = chrono::high_resolution_clock::now();
+//    }
+
     // Push or pop vertex onto stack
     if (v != -1) {
         if (choice == 1) {
-            ver_stack.push_back(v_order[v]);
+            ver_stack.push_back(v);
         }
         else if (choice == 0) {
             ver_stack.pop_back();
         } //endif
     } //endif
 
-    map<int, vector<int>> covering_tree;
-    int covers_all_colored_faces = full_tree_test(eg, ver_stack, face_color, covering_tree);
-
+    vector<vector<int>> covering_tree;
+    bool covers_all_colored_faces = full_tree_test(eg, ver_stack, face_color, covering_tree, v_order);
     bool has_cycle = test_for_cycle(covering_tree);
 
     // Checks if covering tree is found

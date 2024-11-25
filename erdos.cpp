@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <algorithm>
 #include "ply_to_embedding.h"
 #include "make_cc.h"
 #include "edgecode.h"
@@ -40,7 +39,7 @@ int main(int argc, char *argv[]) {
         cerr << "No shape name given. Please input desired shape name." << endl;
         cin >> shape;
     }
-    else { // No arguments given
+    else { // Arguments given
         file_name = argv[1];
         shape = argv[2];
     } //endif
@@ -51,42 +50,56 @@ int main(int argc, char *argv[]) {
     } //endif
 
     // Reads ply file
+    cout << "Reading ply file ..." << endl;
     if(!ply_to_embedding(file_name, vertices, faces)) {
         exit(1);
     }
 
     // Makes mesh checkerboard-colorable
+    cout << "Running makecc ..." << endl;
     makecc(faces, edges, double_edges);
 
     // Creates vertex-to-edge adjacency list to represent mesh
+    cout << "Running create_adjL ..." << endl;
     create_adjL(vertices, faces, edges, double_edges, adjL);
 
     // Creates embedded graph object
+    cout << "Creating embedded graph ..." << endl;
     CC_Embedded_Graph eg = CC_Embedded_Graph(adjL);
 
     // BFS ordering of graph vertices
+    cout << "Getting vertex ordering ..." << endl;
     v_order = eg.getVertexOrdering();
 
-    // Branch bound search for "red" covering tree vertices 
+    int color = 1; // red
+    // Branch bound search for "red" covering tree vertices
+    cout << "Searching for covering tree (red) ..." << endl;
     bb_covering_tree(eg, -1, 1, ver_stack, 1, v_order); 
 
     // Checks whether "red" covering tree exists
     if (ver_stack.size() == 0) {
         // Branch bound search for "blue" covering tree vertices
+        cout << "Searching for covering tree (blue) ..." << endl;
         bb_covering_tree(eg, -1, 1, ver_stack, 0, v_order); 
 
         if (ver_stack.size() == 0) { // No covering tree was found
             cout << "No covering tree was found. Exiting program." << endl;
             return 0;
-        } //endif
+        } //endif;
 
-        // Finds A-trail for blue covering tree
-        find_ATrail(eg, a_trail, ver_stack, 0, shape);
-    }
-    else {
-        // Finds A-trail for red covering tree
-        find_ATrail(eg, a_trail, ver_stack, 1, shape);
+        color = 0; // blue
     } //endif
+
+    vector<int> ver_choice;
+    for (int i = 0; i < ver_stack.size(); ++i) {
+        ver_choice.push_back(v_order[ver_stack[i]]);
+    }
+    cout << "Covering tree vertices: ";
+    for (auto i : ver_choice) {
+        cout << i << " ";
+    }
+    cout << endl;
+    find_ATrail(eg, a_trail, ver_choice, color, shape);
 
     return 0;
 }

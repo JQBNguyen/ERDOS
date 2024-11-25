@@ -18,6 +18,8 @@ CC_Embedded_Graph::CC_Embedded_Graph(map<int, vector<int>> &adjL) {
     create_graph(this->adjL);
     color_dfs();
     bfs();
+    calcRedFaces(red_faces);
+    calcBlueFaces(blue_faces);
 }
 
 /*
@@ -168,34 +170,43 @@ void CC_Embedded_Graph::bfs() {
     } //endwhile
 }
 
+
 /*
- * Getter function for "red" faces of graph. 
-*
- * @return vector<Face> Container of "red" faces
+ * Calculate for "red" faces of graph.
  */
-vector<Face> CC_Embedded_Graph::getRedFaces() {
-    vector<Face> red_faces;
+void CC_Embedded_Graph::calcRedFaces(vector<Face>& red_faces) {
     for_each(faces.begin(), faces.end(), [&red_faces](Face f) {
         if (f.getColor()) {
             red_faces.push_back(f);
         }
     });
-    return red_faces;
+
+    red_face_vertices = vector<vector<int>>(vertex_count);
+
+    for (int i = 0; i < red_faces.size(); ++i) {
+        for (int j = 0; j < vertex_count; ++j) {
+            if (red_faces[i].containsV(j)) red_face_vertices[j].push_back(i);
+        }
+    }
 }
 
 /*
- * Getter function for "blue" faces of graph. 
- *
- * @return vector<Face> Container of "blue" faces
+ * Calculate for "blue" faces of graph.
  */
-vector<Face> CC_Embedded_Graph::getBlueFaces() {
-    vector<Face> blue_faces;
+void CC_Embedded_Graph::calcBlueFaces(vector<Face>& blue_faces) {
     for_each(faces.begin(), faces.end(), [&blue_faces](Face f) {
         if (!f.getColor()) {
             blue_faces.push_back(f);
         }
     });
-    return blue_faces;
+
+    blue_face_vertices = vector<vector<int>>(vertex_count);
+
+    for (int i = 0; i < blue_faces.size(); ++i) {
+        for (int j = 0; j < vertex_count; ++j) {
+            if (blue_faces[i].containsV(j)) blue_face_vertices[j].push_back(i);
+        }
+    }
 }
 
 /*
