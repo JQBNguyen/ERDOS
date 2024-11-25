@@ -7,7 +7,7 @@
 
 int iterationCount = 0;
 auto start = chrono::high_resolution_clock::now();
-const int interval = 1000;
+const int interval = 1000000;
 
 /*
  * Depth-first search on graph to check for cycles
@@ -127,8 +127,7 @@ bool full_tree_test(CC_Embedded_Graph &eg, vector<int>& ver_stack, int face_colo
         }
     }
 
-
-    if ((covering_tree.size() == (ver_stack.size() + face_vertices.size())) && is_connected(covering_tree, ver_stack[0])) {
+    if ((covering_tree.size() == (ver_stack.size() + color_face_count)) && is_connected(covering_tree, ver_stack[0])) {
         return true;
     }
     else {
@@ -150,13 +149,13 @@ bool full_tree_test(CC_Embedded_Graph &eg, vector<int>& ver_stack, int face_colo
 bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver_stack, int face_color, vector<int>& v_order) {
     // Time
     ++iterationCount;
-//    if (iterationCount % interval == 0) {
-//        cout << iterationCount << ": ";
-//        auto end = chrono::high_resolution_clock::now();
-//        auto time = chrono::duration_cast<chrono::milliseconds>(end - start);
-//        cout << time.count() << "ms" << endl;
-//        start = chrono::high_resolution_clock::now();
-//    }
+    if (iterationCount % interval == 0) {
+        cout << iterationCount << ": ";
+        auto end = chrono::high_resolution_clock::now();
+        auto time = chrono::duration_cast<chrono::milliseconds>(end - start);
+        cout << time.count() << "ms" << endl;
+        start = chrono::high_resolution_clock::now();
+    }
 
     // Push or pop vertex onto stack
     if (v != -1) {
@@ -171,6 +170,16 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
     vector<vector<int>> covering_tree;
     bool covers_all_colored_faces = full_tree_test(eg, ver_stack, face_color, covering_tree, v_order);
     bool has_cycle = test_for_cycle(covering_tree);
+
+//    cout << "iteration:" << iterationCount << endl;
+//    for (int i = 0; i < covering_tree.size(); ++i) {
+//        cout << i << ":";
+//        for (auto j : covering_tree[i]) {
+//            cout << j << " ";
+//        }
+//        cout << endl;
+//    }
+//    cout << endl;
 
     // Checks if covering tree is found
     if (!has_cycle && covers_all_colored_faces) {
