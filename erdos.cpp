@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     } //endif
 
     // Detects if excessive arguments are given
-    if (argc >= 4) {
+    if (argc >= 5) {
         cerr << "WARNING - More arguments given then necessary." << endl;
     } //endif
 
