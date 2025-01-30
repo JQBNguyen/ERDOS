@@ -4,6 +4,7 @@
 #include <ostream>
 #include <iostream>
 #include <map>
+#include <algorithm>
 
 using namespace std;
 
@@ -93,6 +94,10 @@ private:
     map<Edge, vector<Face>> edge_to_face;
     map<int, vector<int>> face_adjL;
     map<int, vector<int>> v_adjL;
+    vector<Face> red_faces;
+    vector<Face> blue_faces;
+    vector<vector<int>> red_face_vertices;
+    vector<vector<int>> blue_face_vertices;
     void create_graph(map<int, vector<int>> adjL);
     void bfs();
     void color_dfs();
@@ -106,8 +111,12 @@ public:
     int getVertexCount() const { return vertex_count; }
     vector<Face> getFaces() { return faces; }
     vector<int> getVertexOrdering() { return vertex_ordering; }
-    vector<Face> getRedFaces();
-    vector<Face> getBlueFaces();
+    vector<Face> getRedFaces() { return red_faces; }
+    vector<Face> getBlueFaces() { return blue_faces; }
+    vector<vector<int>> getRedFaceV() { return red_face_vertices; }
+    vector<vector<int>> getBlueFaceV() { return blue_face_vertices; }
+    void calcRedFaces(vector<Face>&);
+    void calcBlueFaces(vector<Face>&);
 
 };
 

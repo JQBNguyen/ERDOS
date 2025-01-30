@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <algorithm>
 #include "ply_to_embedding.h"
 #include "make_cc.h"
 #include "edgecode.h"
@@ -20,6 +19,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
     string file_name;                   // Target ply file
     string shape;                       // Desired shape name
+    string first_color;                    // First covering tree to search
     vector<vector<double>> vertices;    // Vertex coordinates
     vector<vector<int>> faces;          // Faces as vector of vertices
     set<vector<int>> edges;             // Edges as pair of vertices
@@ -35,58 +35,88 @@ int main(int argc, char *argv[]) {
         cin >> file_name;
         cerr << "No shape name given. Please input desired shape name." << endl;
         cin >> shape;
+        cerr << "No color chosen. Please input red or blue" << endl;
+        cin >> first_color;
     }
-    else if (argc <= 2){ // Only one argument given
+    else if (argc <= 2) { // Only one argument given
         cerr << "No shape name given. Please input desired shape name." << endl;
         cin >> shape;
+        cerr << "No color chosen. Please red or blue" << endl;
+        cin >> first_color;
     }
-    else { // No arguments given
+    else if (argc <= 3) {
+        cerr << "No color chosen. Please input red or blue" << endl;
+        cin >> first_color;
+    }
+    else { // Arguments given
         file_name = argv[1];
         shape = argv[2];
+        first_color = argv[3];
     } //endif
 
     // Detects if excessive arguments are given
-    if (argc >= 4) {
+    if (argc >= 5) {
         cerr << "WARNING - More arguments given then necessary." << endl;
     } //endif
 
     // Reads ply file
+    cout << "Reading ply file ..." << endl;
     if(!ply_to_embedding(file_name, vertices, faces)) {
         exit(1);
     }
 
     // Makes mesh checkerboard-colorable
+    cout << "Running makecc ..." << endl;
     makecc(faces, edges, double_edges);
 
     // Creates vertex-to-edge adjacency list to represent mesh
+    cout << "Running create_adjL ..." << endl;
     create_adjL(vertices, faces, edges, double_edges, adjL);
 
     // Creates embedded graph object
+    cout << "Creating embedded graph ..." << endl;
     CC_Embedded_Graph eg = CC_Embedded_Graph(adjL);
 
     // BFS ordering of graph vertices
+    cout << "Getting vertex ordering ..." << endl;
     v_order = eg.getVertexOrdering();
 
-    // Branch bound search for "red" covering tree vertices 
-    bb_covering_tree(eg, -1, 1, ver_stack, 1, v_order); 
+    int color;
+    if (first_color == "red") {
+        color = 1;
+    }
+    else {
+        color = 0;
+    }
+
+    // Branch bound search for "red" covering tree vertices
+    cout << "Searching for covering tree " << (color ? "(red)" : "(blue)") << "..." << endl;
+    bb_covering_tree(eg, -1, 1, ver_stack, color, v_order);
 
     // Checks whether "red" covering tree exists
     if (ver_stack.size() == 0) {
         // Branch bound search for "blue" covering tree vertices
-        bb_covering_tree(eg, -1, 1, ver_stack, 0, v_order); 
+        cout << "Searching for covering tree " << (color ? "(red)" : "(blue)") << "..." << endl;
+        color = (color + 1) % 2;
+        bb_covering_tree(eg, -1, 1, ver_stack, color, v_order);
 
         if (ver_stack.size() == 0) { // No covering tree was found
             cout << "No covering tree was found. Exiting program." << endl;
             return 0;
-        } //endif
+        } //endif;
 
-        // Finds A-trail for blue covering tree
-        find_ATrail(eg, a_trail, ver_stack, 0, shape);
-    }
-    else {
-        // Finds A-trail for red covering tree
-        find_ATrail(eg, a_trail, ver_stack, 1, shape);
     } //endif
+
+    vector<int> ver_choice;
+    for (int i = 0; i < ver_stack.size(); ++i) {
+        ver_choice.push_back(v_order[ver_stack[i]]);
+    }
+    cout << "Covering tree vertices: ";
+    for (auto i : ver_choice) {
+        cout << i << " ";
+    }
+    cout << endl;
+    find_ATrail(eg, a_trail, ver_choice, color, shape);
 
     return 0;
 }
