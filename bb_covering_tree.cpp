@@ -185,7 +185,7 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
     if (!has_cycle && covers_all_colored_faces) {
         return true;
     }
-    else if (has_cycle || (eg.getVertexCount() - 1) == v) {
+    else if (has_cycle || (eg.getVertexCount() - 1) <= v) {
         return false;
     }
     else {

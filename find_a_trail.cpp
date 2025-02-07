@@ -23,8 +23,7 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
     if (color) {
         faces_1 = eg.getRedFaces();
         faces_2 = eg.getBlueFaces();
-    }
-    else {
+    } else {
         faces_1 = eg.getBlueFaces();
         faces_2 = eg.getRedFaces();
     } //endif
@@ -70,8 +69,7 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
                         break;
                     } //endif
                 } //endfor
-            }
-            else { // Wraps around current face if current vertex is NOT in covering tree
+            } else { // Wraps around current face if current vertex is NOT in covering tree
                 int eInd = -1;
                 for (int i = 0; i < curr_f.getEdges().size(); ++i) {
                     if (curr_f.getEdges()[i] == curr_e) {
@@ -82,8 +80,7 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
                 curr_e = curr_f.getEdges()[(eInd + 1) % curr_f.getEdges().size()];
                 a_trail.push_back(curr_e);
             } //endif
-        }
-        else if (curr_f.getColor() != color) { // If face is NOT color of interest
+        } else if (curr_f.getColor() != color) { // If face is NOT color of interest
             if (find_if(ver_choice.begin(), ver_choice.end(), [&curr_e](int v) {
                 return curr_e.getV1() == v;
             }) != ver_choice.end()) { // Wraps around current face if current vertex is in covering tree
@@ -99,8 +96,7 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
                 } //endif
                 curr_e = curr_f.getEdges()[eInd - 1];
                 a_trail.push_back(Edge(curr_e.getV2(), curr_e.getV1(), curr_e.getID()));
-            }
-            else { // Wraps around opposing colored face if current vertex is NOT in covering tree
+            } else { // Wraps around opposing colored face if current vertex is NOT in covering tree
                 for (int i = 0; i < faces_1.size(); ++i) {
                     bool flag = false;
                     for (int j = 0; j < faces_1[i].getEdges().size(); ++j) {
@@ -124,16 +120,18 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
     string o = "";
     if (color) {
         o = "atrail_" + shape + "_red_obj.txt";
-    }
-    else {
+    } else {
         o = "atrail_" + shape + "_blue_obj.txt";
     } //endif
 
     // Write A-trail to output file
-    ofstream myFile(o);
-    for (auto i : a_trail) {
-        myFile << i.getV1() + 1 << " ";
-    } //endfor
-    myFile << a_trail.at(a_trail.size() - 1).getV2() + 1;
-    myFile.close();
+    #pragma omp critical
+    {
+        ofstream myFile(o);
+        for (auto i: a_trail) {
+            myFile << i.getV1() + 1 << " ";
+        } //endfor
+        myFile << a_trail.at(a_trail.size() - 1).getV2() + 1;
+        myFile.close();
+    }
 }
