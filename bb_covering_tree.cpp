@@ -7,7 +7,7 @@
 
 int iterationCount = 0;
 auto start = chrono::high_resolution_clock::now();
-const int interval = 1000000;
+const int interval = 10000000;
 
 /*
  * Depth-first search on graph to check for cycles

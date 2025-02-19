@@ -38,15 +38,27 @@ int main(int argc, char *argv[]) {
         cin >> file_name;
         cerr << "No shape name given. Please input desired shape name." << endl;
         cin >> shape;
+        cerr << "Branch number not specified. Please input number of branches." << endl;
+        int b;
+        cin >> b;
+        branches = pow(2, (int)log2(b));
     }
     else if (argc <= 2) { // Only one argument given
+        file_name = argv[1];
         cerr << "No shape name given. Please input desired shape name." << endl;
         cin >> shape;
+        cerr << "Branch number not specified. Please input number of branches." << endl;
+        int b;
+        cin >> b;
+        branches = pow(2, (int)log2(b));
     }
     else if (argc <= 3) {
         file_name = argv[1];
         shape = argv[2];
-        branches = 2;
+        cerr << "Branch number not specified. Please input number of branches." << endl;
+        int b;
+        cin >> b;
+        branches = pow(2, (int)log2(b));
     }
     else { // Arguments given
         file_name = argv[1];
