@@ -118,10 +118,13 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
 
     // Output file name
     string o = "";
+    string o1 = "";
     if (color) {
         o = "atrail_" + shape + "_red_obj.txt";
+        o1 = "atrail_" + shape + "_red_obj.ntrail";
     } else {
         o = "atrail_" + shape + "_blue_obj.txt";
+        o1 = "atrail_" + shape + "_blue_obj.ntrail";
     } //endif
 
     // Write A-trail to output file
@@ -133,5 +136,12 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
         } //endfor
         myFile << a_trail.at(a_trail.size() - 1).getV2() + 1;
         myFile.close();
+
+        ofstream myFile1(o1);
+        for (auto i: a_trail) {
+            myFile1 << i.getV1() << " ";
+        } //endfor
+        myFile1 << a_trail.at(a_trail.size() - 1).getV2();
+        myFile1.close();
     }
 }
