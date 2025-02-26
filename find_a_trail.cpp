@@ -120,11 +120,11 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
     string o = "";
     string o1 = "";
     if (color) {
-        o = "atrail_" + shape + "_red_obj.txt";
-        o1 = "atrail_" + shape + "_red_obj.ntrail";
+        o = "atrail_" + shape + "_red.txt";
+        o1 = "atrail_" + shape + "_red.ntrail";
     } else {
-        o = "atrail_" + shape + "_blue_obj.txt";
-        o1 = "atrail_" + shape + "_blue_obj.ntrail";
+        o = "atrail_" + shape + "_blue.txt";
+        o1 = "atrail_" + shape + "_blue.ntrail";
     } //endif
 
     // Write A-trail to output file
