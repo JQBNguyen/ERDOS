@@ -94,14 +94,16 @@ int main(int argc, char *argv[]) {
     cout << "Getting vertex ordering ..." << endl;
     v_order = eg.getVertexOrdering();
 
+    // Searching for covering tree
+    cout << "Searching covering tree(s) ..." << endl;
     #pragma omp parallel for shared(v_order, branches, eg) private(ver_stack, a_trail)
     for (int i = 0; i < branches; ++i) {
         int color = i % 2;
 
         // Populate different starting ver_stack based on branch
         int binary = i / 2;
-        for (int j = 0; j < v_order.size(); ++j) {
-            if (binary & (1 << j)) {
+        for (int j = 0; j < (branches / 2); ++j) {
+            if ((binary >> j) & 1) {
                 ver_stack.push_back(j);
             }
         }
@@ -130,18 +132,25 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < ver_stack.size(); ++j) {
             ver_choice.push_back(v_order[ver_stack[j]]);
         }
+
+        // A-trail
+        if (!ver_choice.empty()) {
+            find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i));
+        }
+
         #pragma omp critical
         {
+            cout << endl;
+            cout << "Vertex stack (" << (color ? "red" : "blue") << ") branch " << i << ": ";
+            for (auto v: ver_stack) {
+                cout << v << " ";
+            }
+            cout << endl;
             cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") branch " << i << ": ";
             for (auto v: ver_choice) {
                 cout << v << " ";
             }
             cout << endl;
-        }
-
-        // A-trail
-        if (!ver_choice.empty()) {
-            find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i));
         }
     }
 
