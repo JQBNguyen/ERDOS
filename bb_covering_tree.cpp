@@ -173,7 +173,6 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
 
     // Checks if covering tree is found
     if (!has_cycle && covers_all_colored_faces) {
-        cout << "found" << endl;
         return true;
     }
     else if (has_cycle || (eg.getVertexCount() - 1) <= v) {

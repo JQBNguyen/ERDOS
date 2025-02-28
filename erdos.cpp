@@ -127,8 +127,11 @@ int main(int argc, char *argv[]) {
 
         // Find covering tree
         if (cont) {
+            // Start search at next vertex
             bool has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order);
             if (!has_covering_tree) bb_covering_tree(eg, log2(branches / 2), 0, ver_stack, color, v_order);
+
+            // Clear initial vertex stack if no covering tree found
             if (ver_stack.size() == ver_stack_initial_count) {
                 ver_stack.clear();
             }
