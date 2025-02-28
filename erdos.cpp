@@ -117,14 +117,21 @@ int main(int argc, char *argv[]) {
         bool cont = true;
         if (!has_cycle && covers_all_colored_faces) {
             cont = false;
-        } else if (has_cycle || (eg.getVertexCount() - 1) <= ver_stack.size()) {
+        }
+        else if (has_cycle || eg.getVertexCount() <= ver_stack.size()) {
             cont = false;
             ver_stack.clear();
         }
 
+        int ver_stack_initial_count = ver_stack.size();
+
         // Find covering tree
         if (cont) {
-            bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order);
+            bool has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order);
+            if (!has_covering_tree) bb_covering_tree(eg, log2(branches / 2), 0, ver_stack, color, v_order);
+            if (ver_stack.size() == ver_stack_initial_count) {
+                ver_stack.clear();
+            }
         }
 
         // Covering tree vertices

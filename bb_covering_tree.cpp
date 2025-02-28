@@ -171,18 +171,9 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
     bool covers_all_colored_faces = full_tree_test(eg, ver_stack, face_color, covering_tree, v_order);
     bool has_cycle = test_for_cycle(covering_tree);
 
-//    cout << "iteration:" << iterationCount << endl;
-//    for (int i = 0; i < covering_tree.size(); ++i) {
-//        cout << i << ":";
-//        for (auto j : covering_tree[i]) {
-//            cout << j << " ";
-//        }
-//        cout << endl;
-//    }
-//    cout << endl;
-
     // Checks if covering tree is found
     if (!has_cycle && covers_all_colored_faces) {
+        cout << "found" << endl;
         return true;
     }
     else if (has_cycle || (eg.getVertexCount() - 1) <= v) {
