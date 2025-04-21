@@ -225,62 +225,59 @@ int main(int argc, char *argv[]) {
     else if (checkPointGiven) {
         // Loop through given checkpoint files
         #pragma omp parallel for shared(v_order, eg) private(ver_stack, a_trail, iterationCount, start)
-        {
-            for (int i = 4; i < argc + 1; ++i) {
-                string n;
-                ifstream myFile;
-                myFile.open(argv[i]);
+        for (int i = 4; i < argc + 1; ++i) {
+            string n;
+            ifstream myFile;
+            myFile.open(argv[i]);
 
-                int v, choice, face_color, branchNum;
+            int v, choice, face_color, branchNum;
 
-                if (myFile.is_open()) {
-                    while (getline(myFile, n, ' ')) {
-                        if (n == "|") {
-                            break;
-                        }
-                        ver_stack.push_back(stoi(n));
+            if (myFile.is_open()) {
+                while (getline(myFile, n, ' ')) {
+                    if (n == "|") {
+                        break;
                     }
-                    getline(myFile, n, ' ');
-                    v = stoi(n);
-                    getline(myFile, n, ' ');
-                    choice = stoi(n);
-                    getline(myFile, n, ' ');
-                    face_color = stoi(n);
-                    getline(myFile, n, ' ');
-                    branchNum = stoi(n);
+                    ver_stack.push_back(stoi(n));
                 }
-                myFile.close();
+                getline(myFile, n, ' ');
+                v = stoi(n);
+                getline(myFile, n, ' ');
+                choice = stoi(n);
+                getline(myFile, n, ' ');
+                face_color = stoi(n);
+                getline(myFile, n, ' ');
+                branchNum = stoi(n);
+            }
+            myFile.close();
 
-                start = chrono::high_resolution_clock::now();
-                bool has_covering_tree = bb_covering_tree(eg, v, choice, ver_stack, face_color, v_order,
+            start = chrono::high_resolution_clock::now();
+            bool has_covering_tree = bb_covering_tree(eg, v, choice, ver_stack, face_color, v_order,
                                                           iterationCount, start, branchNum, shape);
 
-                // Covering tree vertices
-                vector<int> ver_choice;
-                for (int j = 0; j < ver_stack.size(); ++j) {
-                    ver_choice.push_back(v_order[ver_stack[j]]);
-                }
+            // Covering tree vertices
+            vector<int> ver_choice;
+            for (int j = 0; j < ver_stack.size(); ++j) {
+                ver_choice.push_back(v_order[ver_stack[j]]);
+            }
 
-                // A-trail
-                if (!ver_choice.empty()) {
-                    find_ATrail(eg, a_trail, ver_choice, face_color, shape + "_" + to_string(branchNum));
-                }
+            // A-trail
+            if (!ver_choice.empty()) {
+                find_ATrail(eg, a_trail, ver_choice, face_color, shape + "_" + to_string(branchNum));
+            }
 
-                #pragma omp critical
-                {
-                    cout << endl;
-                    cout << "Vertex stack (" << (face_color ? "red" : "blue") << ") branch " << i << ": ";
-                    for (auto v: ver_stack) {
-                        cout << v << " ";
-                    }
-                    cout << endl;
-                    cout << "Covering tree vertices (" << (face_color ? "red" : "blue") << ") branch " << i << ": ";
-                    for (auto v: ver_choice) {
-                        cout << v << " ";
-                    }
-                    cout << endl;
+            #pragma omp critical
+            {
+                cout << endl;
+                cout << "Vertex stack (" << (face_color ? "red" : "blue") << ") branch " << i << ": ";
+                for (auto v: ver_stack) {
+                    cout << v << " ";
                 }
-
+                cout << endl;
+                cout << "Covering tree vertices (" << (face_color ? "red" : "blue") << ") branch " << i << ": ";
+                for (auto v: ver_choice) {
+                    cout << v << " ";
+                }
+                cout << endl;
             }
         }
     }
