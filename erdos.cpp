@@ -21,7 +21,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
     string file_name;                   // Target ply file
     string shape;                       // Desired shape name
-    string first_color;                    // First covering tree to search
+    int first_color;                 // First covering tree to search
     vector<vector<double>> vertices;    // Vertex coordinates
     vector<vector<int>> faces;          // Faces as vector of vertices
     set<vector<int>> edges;             // Edges as pair of vertices
@@ -31,6 +31,10 @@ int main(int argc, char *argv[]) {
     vector<int> v_order;                // BFS ordering of graph vertices
     vector<Edge> a_trail;               // A-trail as a vector of edges
     int branches;
+    bool checkPointGiven = false;
+
+    unsigned long long int iterationCount = 0;
+    auto start = chrono::high_resolution_clock::now();
 
     // Checking whether arguments are given
     if (argc <= 1) { // No arguments given
@@ -60,15 +64,15 @@ int main(int argc, char *argv[]) {
         cin >> b;
         branches = pow(2, (int)log2(b));
     }
-    else { // Arguments given
+    else if (argc <= 4){ // Arguments given
         file_name = argv[1];
         shape = argv[2];
         branches = pow(2, (int)log2(stoi(argv[3])));
-    } //endif
-
-    // Detects if excessive arguments are given
-    if (argc >= 5) {
-        cerr << "WARNING - More arguments given then necessary." << endl;
+    }
+    else if (argc >= 5) {
+        file_name = argv[1];
+        shape = argv[2];
+        checkPointGiven = true;
     } //endif
 
     // Reads ply file
@@ -94,73 +98,133 @@ int main(int argc, char *argv[]) {
     cout << "Getting vertex ordering ..." << endl;
     v_order = eg.getVertexOrdering();
 
-    // Searching for covering tree
-    cout << "Searching covering tree(s) ..." << endl;
-    #pragma omp parallel for shared(v_order, branches, eg) private(ver_stack, a_trail)
-    for (int i = 0; i < branches; ++i) {
-        int color = i % 2;
-
-        // Populate different starting ver_stack based on branch
-        int binary = i / 2;
-        for (int j = 0; j < (branches / 2); ++j) {
-            if ((binary >> j) & 1) {
-                ver_stack.push_back(j);
+    if (!checkPointGiven) {
+        if (branches <= 1) {
+            cout << "Input 1 (red) or 0 (blue)";
+            cin >> first_color;
+            while (first_color != 1 && first_color != 0) {
+                cout << "Input 1 (red) or 0 (blue)";
+                cin >> first_color;
             }
-        }
+            vector<int> ver_choice;
+            int color = first_color;
+            bool has_covering_tree = bb_covering_tree(eg, -1, 1, ver_stack, first_color, v_order,
+                                                      iterationCount, start, 0, shape);
+            if (!has_covering_tree) {
+                has_covering_tree = bb_covering_tree(eg, -1, 1, ver_stack, (first_color + 1) % 2, v_order,
+                                                     iterationCount, start, 0, shape);
+                if (has_covering_tree) color = (first_color + 1) % 2;
+                // Covering tree vertices
+                for (int j = 0; j < ver_stack.size(); ++j) {
+                    ver_choice.push_back(v_order[ver_stack[j]]);
+                }
 
-        // Check starting covering tree validity
-        vector<vector<int>> covering_tree;
-        bool covers_all_colored_faces = full_tree_test(eg, ver_stack, color, covering_tree, v_order);
-        bool has_cycle = test_for_cycle(covering_tree);
+                // A-trail
+                if (!ver_choice.empty()) {
+                    find_ATrail(eg, a_trail, ver_choice, first_color, shape + "_0");
+                }
+            } else {
+                // Covering tree vertices
+                for (int j = 0; j < ver_stack.size(); ++j) {
+                    ver_choice.push_back(v_order[ver_stack[j]]);
+                }
 
-        // Stop branch condition
-        bool cont = true;
-        if (!has_cycle && covers_all_colored_faces) {
-            cont = false;
-        }
-        else if (has_cycle || eg.getVertexCount() <= ver_stack.size()) {
-            cont = false;
-            ver_stack.clear();
-        }
-
-        int ver_stack_initial_count = ver_stack.size();
-
-        // Find covering tree
-        if (cont) {
-            // Start search at next vertex
-            bool has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order);
-            if (!has_covering_tree) bb_covering_tree(eg, log2(branches / 2), 0, ver_stack, color, v_order);
-
-            // Clear initial vertex stack if no covering tree found
-            if (ver_stack.size() == ver_stack_initial_count) {
-                ver_stack.clear();
+                // A-trail
+                if (!ver_choice.empty()) {
+                    find_ATrail(eg, a_trail, ver_choice, (first_color + 1) % 2, shape + "_1");
+                }
             }
-        }
 
-        // Covering tree vertices
-        vector<int> ver_choice;
-        for (int j = 0; j < ver_stack.size(); ++j) {
-            ver_choice.push_back(v_order[ver_stack[j]]);
-        }
-
-        // A-trail
-        if (!ver_choice.empty()) {
-            find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i));
-        }
-
-        #pragma omp critical
-        {
             cout << endl;
-            cout << "Vertex stack (" << (color ? "red" : "blue") << ") branch " << i << ": ";
+            cout << "Vertex stack (" << (color ? "red" : "blue") << ") :";
             for (auto v: ver_stack) {
                 cout << v << " ";
             }
             cout << endl;
-            cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") branch " << i << ": ";
+            cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") :";
             for (auto v: ver_choice) {
                 cout << v << " ";
             }
             cout << endl;
+        } else {
+            // Searching for covering tree
+            cout << "Searching covering tree(s) ..." << endl;
+            #pragma omp parallel for shared(v_order, branches, eg) private(ver_stack, a_trail, iterationCount, start)
+            for (int i = 0; i < branches; ++i) {
+                int color = i % 2;
+
+                // Populate different starting ver_stack based on branch
+                int binary = i / 2;
+                for (int j = 0; j < (branches / 2); ++j) {
+                    if ((binary >> j) & 1) {
+                        ver_stack.push_back(j);
+                    }
+                }
+
+                // Check starting covering tree validity
+                vector<vector<int>> covering_tree;
+                bool covers_all_colored_faces = full_tree_test(eg, ver_stack, color, covering_tree, v_order);
+                bool has_cycle = test_for_cycle(covering_tree);
+
+                // Stop branch condition
+                bool cont = true;
+                if (!has_cycle && covers_all_colored_faces) {
+                    cont = false;
+                } else if (has_cycle || eg.getVertexCount() <= ver_stack.size()) {
+                    cont = false;
+                    ver_stack.clear();
+                }
+
+                int ver_stack_initial_count = ver_stack.size();
+
+                // Find covering tree
+                if (cont) {
+                    // Start search at next vertex
+                    start = chrono::high_resolution_clock::now();
+                    bool has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order,
+                                                              iterationCount, start, i, shape);
+                    if (!has_covering_tree)
+                        bb_covering_tree(eg, log2(branches / 2), 0, ver_stack, color, v_order, iterationCount, start, i,
+                                         shape);
+
+                    // Clear initial vertex stack if no covering tree found
+                    if (ver_stack.size() == ver_stack_initial_count) {
+                        ver_stack.clear();
+                    }
+                }
+
+                // Covering tree vertices
+                vector<int> ver_choice;
+                for (int j = 0; j < ver_stack.size(); ++j) {
+                    ver_choice.push_back(v_order[ver_stack[j]]);
+                }
+
+                // A-trail
+                if (!ver_choice.empty()) {
+                    find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i));
+                }
+
+                #pragma omp critical
+                {
+                    cout << endl;
+                    cout << "Vertex stack (" << (color ? "red" : "blue") << ") branch " << i << ": ";
+                    for (auto v: ver_stack) {
+                        cout << v << " ";
+                    }
+                    cout << endl;
+                    cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") branch " << i << ": ";
+                    for (auto v: ver_choice) {
+                        cout << v << " ";
+                    }
+                    cout << endl;
+                }
+            }
+        }
+    }
+    else if (checkPointGiven) {
+        // Loop through given checkpoint files
+        for (int i = 4; i < argc + 1; ++i) {
+            // Parse files here.
         }
     }
 
