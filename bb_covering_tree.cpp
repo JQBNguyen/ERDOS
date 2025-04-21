@@ -168,7 +168,7 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
             for (auto i: ver_stack) {
                 myFile << i << " ";
             }
-            myFile << endl;
+            myFile << "| ";
             myFile << v << " " << choice << " " << face_color << " " << branchNum << endl;
             myFile.close();
         }
