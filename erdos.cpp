@@ -7,7 +7,8 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <bits/stdc++.h>
+#include <sstream>
+#include <cmath>
 #include "ply_to_embedding.h"
 #include "make_cc.h"
 #include "edgecode.h"
