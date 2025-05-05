@@ -16,6 +16,10 @@
 #include "bb_covering_tree.h"
 #include "find_a_trail.h"
 
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
+
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -203,6 +207,10 @@ int main(int argc, char *argv[]) {
     v_order = eg.getVertexOrdering();
     cout << "FINISHED" << endl;
     cout << string(30, '=') << endl;
+
+#ifdef USE_OPENMP
+    omp_set_num_threads(branches);
+#endif
 
     // Covering tree search
     cout << string(30, '=') << endl;
