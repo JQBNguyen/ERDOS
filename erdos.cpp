@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <omp.h>
 #include <bits/stdc++.h>
 #include "ply_to_embedding.h"
 #include "make_cc.h"
@@ -203,9 +202,6 @@ int main(int argc, char *argv[]) {
     v_order = eg.getVertexOrdering();
     cout << "FINISHED" << endl;
     cout << string(30, '=') << endl;
-
-    // Sets Maximum Number of Threads
-    omp_set_num_threads(branches);
 
     // Covering tree search
     cout << string(30, '=') << endl;
