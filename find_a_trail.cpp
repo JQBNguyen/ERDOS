@@ -60,11 +60,11 @@ bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) 
         vector<int> edge_order = v_visit_order[i];
         edge_order.insert(edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
 
-        auto it = search(edge_order.begin(), edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
+        auto it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
 
         if (it == edge_order.end()) {
             reverse(edge_order.begin(), edge_order.end());
-            it = search(edge_order.begin(), edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
+            it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
             if (it == edge_order.end()) {
                 return true;
             }
