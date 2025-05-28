@@ -240,6 +240,8 @@ int main(int argc, char *argv[]) {
                 // A-trail
                 if (!ver_choice.empty()) {
                     find_ATrail(eg, a_trail, ver_choice, first_color, shape + "_1");
+                    bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                    write_atrail_to_file(a_trail, first_color, shape + "_1", has_crossing_staples);
                 } //endif
 
                 // Output vertex stack and covering tree vertices to console
@@ -274,6 +276,8 @@ int main(int argc, char *argv[]) {
                     // A-trail
                     if (!ver_choice.empty()) {
                         find_ATrail(eg, a_trail, ver_choice, color, shape + "_0");
+                        bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                        write_atrail_to_file(a_trail, color, shape + "_0", has_crossing_staples);
                     } //endfor
 
                     // Output vertex stack and covering tree vertices to console
@@ -347,6 +351,8 @@ int main(int argc, char *argv[]) {
                 // A-trail
                 if (!ver_choice.empty()) {
                     find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i));
+                    bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                    write_atrail_to_file(a_trail, color, shape + "_" + to_string(i), has_crossing_staples);
                 } //endif
 
                 // Output vertex stack and covering tree vertices to console
@@ -413,6 +419,9 @@ int main(int argc, char *argv[]) {
             // A-trail
             if (!ver_choice.empty()) {
                 find_ATrail(eg, a_trail, ver_choice, face_color, shape + "_" + to_string(branchNum));
+                bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                write_atrail_to_file(a_trail, face_color, shape + "_" + to_string(branchNum), has_crossing_staples);
+
             } //endif
 
             // Output vertex stack and covering tree vertices to console
@@ -464,6 +473,8 @@ int main(int argc, char *argv[]) {
             // A-trail
             if (!ver_choice.empty()) {
                 find_ATrail(eg, a_trail, ver_choice, first_color, shape + "_0");
+                bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                write_atrail_to_file(a_trail, first_color, shape + "_0", has_crossing_staples);
             } //endfor
         } else {
             // Covering tree vertices
@@ -474,6 +485,8 @@ int main(int argc, char *argv[]) {
             // A-trail
             if (!ver_choice.empty()) {
                 find_ATrail(eg, a_trail, ver_choice, (first_color + 1) % 2, shape + "_1");
+                bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                write_atrail_to_file(a_trail, (first_color + 1) % 2, shape + "_1", has_crossing_staples);
             } //endif
         } //endif
 
@@ -535,6 +548,8 @@ int main(int argc, char *argv[]) {
             // A-trail
             if (!ver_choice.empty()) {
                 find_ATrail(eg, a_trail, ver_choice, face_color, shape + "_" + to_string(branchNum));
+                bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                write_atrail_to_file(a_trail, face_color, shape + "_" + to_string(branchNum), has_crossing_staples);
             } //endif
 
             // Output vertex stack and covering tree vertices to console

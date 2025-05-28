@@ -6,6 +6,74 @@
 
 using namespace std;
 
+void write_atrail_to_file(vector<Edge>& a_trail, int color, string shape, bool crossing_staples) {
+    // Output file name
+    string o = "";
+    string o1 = "";
+    if (color) {
+        o = "atrail_" + shape + "_red";
+        o1 = "atrail_" + shape + "_red";
+    } else {
+        o = "atrail_" + shape + "_blue";
+        o1 = "atrail_" + shape + "_blue";
+    } //endif
+
+    if (crossing_staples) {
+        o += "_crossing_staples_.txt";
+        o1 += "_crossing_staples_.ntrail";
+    }
+    else {
+        o += "_no_crossing_staples_.txt";
+        o1 += "_no_crossing_staples_.ntrail";
+    } //endif
+
+    // Write A-trail to output file
+#pragma omp critical
+    {
+        ofstream myFile(o);
+        for (auto i: a_trail) {
+            myFile << i.getV1() + 1 << " ";
+        } //endfor
+        myFile << a_trail.at(a_trail.size() - 1).getV2() + 1;
+        myFile << flush;
+        myFile.close();
+
+        ofstream myFile1(o1);
+        for (auto i: a_trail) {
+            myFile1 << i.getV1() << " ";
+        } //endfor
+        myFile1 << a_trail.at(a_trail.size() - 1).getV2();
+        myFile << flush;
+        myFile1.close();
+    }
+}
+
+bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) {
+    map<int, vector<int>> v_visit_order;
+
+    for (int i = 0; i < a_trail.size(); ++i) {
+        v_visit_order[a_trail[i].getV1()].push_back(a_trail[i].getID());
+        v_visit_order[a_trail[i].getV2()].push_back(a_trail[i].getID());
+    }
+
+    for (int i = 0; i < adjL.size(); ++i) {
+        vector<int> edge_order = v_visit_order[i];
+        edge_order.insert(edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
+
+        auto it = search(edge_order.begin(), edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
+
+        if (it == edge_order.end()) {
+            reverse(edge_order.begin(), edge_order.end());
+            it = search(edge_order.begin(), edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
+            if (it == edge_order.end()) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 /*
  * Finds A-trail based on given covering tree of graph.
  *
@@ -115,33 +183,4 @@ void find_ATrail(CC_Embedded_Graph& eg, vector<Edge>& a_trail, vector<int>& ver_
             } //endif
         } //endif
     } //endwhile
-
-    // Output file name
-    string o = "";
-    string o1 = "";
-    if (color) {
-        o = "atrail_" + shape + "_red.txt";
-        o1 = "atrail_" + shape + "_red.ntrail";
-    } else {
-        o = "atrail_" + shape + "_blue.txt";
-        o1 = "atrail_" + shape + "_blue.ntrail";
-    } //endif
-
-    // Write A-trail to output file
-    #pragma omp critical
-    {
-        ofstream myFile(o);
-        for (auto i: a_trail) {
-            myFile << i.getV1() + 1 << " ";
-        } //endfor
-        myFile << a_trail.at(a_trail.size() - 1).getV2() + 1;
-        myFile.close();
-
-        ofstream myFile1(o1);
-        for (auto i: a_trail) {
-            myFile1 << i.getV1() << " ";
-        } //endfor
-        myFile1 << a_trail.at(a_trail.size() - 1).getV2();
-        myFile1.close();
-    }
 }

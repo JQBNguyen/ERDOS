@@ -6,7 +6,7 @@
 #include <fstream>
 #include "cc_embedded_graph.h"
 
-const int INTERVAL = 1000000;
+const int INTERVAL = 1000000000;
 
 /*
  * Depth-first search on graph to check for cycles
