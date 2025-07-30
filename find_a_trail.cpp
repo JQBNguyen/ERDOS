@@ -43,7 +43,7 @@ void write_atrail_to_file(vector<Edge>& a_trail, int color, string shape, bool c
             myFile1 << i.getV1() << " ";
         } //endfor
         myFile1 << a_trail.at(a_trail.size() - 1).getV2();
-        myFile << flush;
+        myFile1 << flush;
         myFile1.close();
     }
 }
