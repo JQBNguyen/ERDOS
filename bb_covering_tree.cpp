@@ -145,7 +145,7 @@ bool full_tree_test(CC_Embedded_Graph &eg, vector<int>& ver_stack, int face_colo
  * @param v_order BFS vertex ordering
  * @return bool Facilitates  branch-bound decision-making.
  */
-bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver_stack, int face_color, vector<int>& v_order, unsigned long long int& iterationCount, std::chrono::time_point<std::chrono::high_resolution_clock>& start, int branchNum, string shape) {
+bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver_stack, int face_color, vector<int>& v_order, unsigned long long int& iterationCount, std::chrono::time_point<std::chrono::high_resolution_clock>& start, int branchNum, string shape, bool useCheckPoints) {
     // Time
     ++iterationCount;
     if (iterationCount % INTERVAL == 0) {
@@ -158,19 +158,21 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
         // Save Progress to file
     #pragma omp critical
         {
-            string o;
-            if (face_color) {
-                o = "covering_tree_" + shape + "_red_branch_" + to_string(branchNum) + "_checkpoint.txt";
-            } else {
-                o = "covering_tree_" + shape + "_blue_branch_" + to_string(branchNum) + "_checkpoint.txt";
+            if (useCheckPoints) {
+                string o;
+                if (face_color) {
+                    o = "covering_tree_" + shape + "_red_branch_" + to_string(branchNum) + "_checkpoint.txt";
+                } else {
+                    o = "covering_tree_" + shape + "_blue_branch_" + to_string(branchNum) + "_checkpoint.txt";
+                }
+                ofstream myFile(o);
+                for (auto i: ver_stack) {
+                    myFile << i << " ";
+                }
+                myFile << "| ";
+                myFile << v << " " << choice << " " << face_color << " " << branchNum << endl;
+                myFile.close();
             }
-            ofstream myFile(o);
-            for (auto i: ver_stack) {
-                myFile << i << " ";
-            }
-            myFile << "| ";
-            myFile << v << " " << choice << " " << face_color << " " << branchNum << endl;
-            myFile.close();
         }
 
     }
@@ -198,9 +200,9 @@ bool bb_covering_tree(CC_Embedded_Graph &eg, int v, int choice, vector<int>& ver
     }
     else {
         int next_v = v + 1;
-        bool has_covering_tree = bb_covering_tree(eg, next_v, 1, ver_stack, face_color, v_order, iterationCount, start, branchNum, shape); // "Yes" to next vertex
+        bool has_covering_tree = bb_covering_tree(eg, next_v, 1, ver_stack, face_color, v_order, iterationCount, start, branchNum, shape, useCheckPoints); // "Yes" to next vertex
         if (!has_covering_tree) {
-            bb_covering_tree(eg, next_v, 0, ver_stack, face_color, v_order, iterationCount, start, branchNum, shape); // "No" to next vertex
+            bb_covering_tree(eg, next_v, 0, ver_stack, face_color, v_order, iterationCount, start, branchNum, shape, useCheckPoints); // "No" to next vertex
         }
         else {
             return true;

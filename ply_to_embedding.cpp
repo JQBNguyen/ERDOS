@@ -49,13 +49,13 @@ bool ply_to_embedding(string file_name, vector<vector<double>>& vertices, vector
             // Checks vertex count
             if (!line.substr(0, 14).compare("element vertex")) {
                 vertex_count = stoi(line.substr(15));
-                cout << "Vertex Count: " << vertex_count << endl;
+                cout << "There are " << vertex_count << " vertices" << endl;
             }//endif
 
             // Checks face count
             if (!line.substr(0, 12).compare("element face")) {
                 face_count = stoi(line.substr(13));
-                cout << "Face Count: " << face_count << endl;
+                cout << "There are " << face_count << " faces." << endl;
             }//endif
 
             // Starts reading for vertex and face information if "end_header" reached
