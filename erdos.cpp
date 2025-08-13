@@ -510,8 +510,8 @@ int main(int argc, char *argv[]) {
 #endif
 
     cout << "FINISHED" << endl;
-    cout << string(30, '=') << endl;
-    cout << string(30, '=') << endl;
+    cout << string(50, '=') << endl;
+    cout << string(50, '=') << endl;
 
     return 0;
 }

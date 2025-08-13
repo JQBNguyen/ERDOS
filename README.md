@@ -22,6 +22,7 @@ Y
 N
 ...
 ```
+Note: Program assumes user correctness with providing matching PLY file and checkpoint file(s).
 
 ### Command Line Arguments Description
 - <input_PLY_file>: PLY mesh filepath to find an A-trail scaffold routing for.
