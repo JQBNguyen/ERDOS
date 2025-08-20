@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
 
             // First face color search
             bool has_covering_tree = bb_covering_tree(eg, -1, 1, ver_stack, first_color, v_order,
-                                                      iterationCount, start, 0, shape, useCheckPoints);
+                                                      iterationCount, start, 1, shape + "_1", useCheckPoints);
             if (has_covering_tree) {
                 // Covering tree vertices
                 for (int j = 0; j < ver_stack.size(); ++j) {
@@ -176,25 +176,70 @@ int main(int argc, char *argv[]) {
                 } //endfor
 
                 // A-trail
+                bool has_crossing_staples = false;
                 if (!ver_choice.empty()) {
                     find_ATrail(eg, a_trail, ver_choice, first_color, shape + "_1");
-                    bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                    has_crossing_staples = check_crossing_staples(adjL, a_trail);
                     write_atrail_to_file(a_trail, first_color, shape + "_1", has_crossing_staples);
                 } //endif
 
                 // Output vertex stack and covering tree vertices to console
                 cout << endl;
                 cout << "Covering tree found ..." << endl;
-                cout << "Vertex stack (" << (color ? "red" : "blue") << ") :";
+                cout << "Vertex stack (" << (first_color ? "red" : "blue") << ") :";
                 for (auto v: ver_stack) {
                     cout << v << " ";
                 } //endfor
                 cout << endl;
-                cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") :";
+                cout << "Covering tree vertices (" << (first_color ? "red" : "blue") << ") :";
                 for (auto v: ver_choice) {
                     cout << v << " ";
                 } //endfor
                 cout << endl;
+
+                int search_count = 0;
+                // Continue Search if crossing staples found
+                while (has_crossing_staples) {
+                    ++search_count;
+                    cout << "Continuing search on branch 1 ..." << endl;
+                    int last_vertex = ver_stack[ver_stack.size() - 1];
+                    has_covering_tree = bb_covering_tree(eg, last_vertex, 0, ver_stack, first_color, v_order,
+                                                         iterationCount, start, 1, shape + "_1" + "_s" + to_string(search_count), useCheckPoints);
+                    if (has_covering_tree) {
+                        // Covering tree vertices
+                        for (int j = 0; j < ver_stack.size(); ++j) {
+                            ver_choice.push_back(v_order[ver_stack[j]]);
+                        } //endfor
+
+                        // A-trail
+                        if (!ver_choice.empty()) {
+                            find_ATrail(eg, a_trail, ver_choice, first_color, shape + "_s" + to_string(search_count));
+                            has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                            write_atrail_to_file(a_trail, first_color, shape + "_1" + "_s" + to_string(search_count), has_crossing_staples);
+                        } //endif
+
+                        // Output vertex stack and covering tree vertices to console
+                        cout << endl;
+                        cout << "Covering tree found ..." << endl;
+                        cout << "Vertex stack (" << (first_color ? "red" : "blue") << ") :";
+                        for (auto v: ver_stack) {
+                            cout << v << " ";
+                        } //endfor
+                        cout << endl;
+                        cout << "Covering tree vertices (" << (first_color ? "red" : "blue") << ") :";
+                        for (auto v: ver_choice) {
+                            cout << v << " ";
+                        } //endfor
+                        cout << endl;
+                    }
+                    else {
+                        #pragma omp critical
+                        {
+                            cout << "Could not find a-trail without crossing staples on branch 1" << endl;
+                        }
+                        break;
+                    }
+                }
             }
             else {
                 // Search second face color
@@ -203,7 +248,7 @@ int main(int argc, char *argv[]) {
                 iterationCount = 0;
                 start = chrono::high_resolution_clock::now();
                 has_covering_tree = bb_covering_tree(eg, -1, 1, ver_stack, (first_color + 1) % 2, v_order,
-                                                     iterationCount, start, 0, shape, useCheckPoints);
+                                                     iterationCount, start, 0, shape + "_0", useCheckPoints);
                 if (has_covering_tree) {
                     color = (first_color + 1) % 2;
                     // Covering tree vertices
@@ -212,25 +257,70 @@ int main(int argc, char *argv[]) {
                     } //endfor
 
                     // A-trail
+                    bool has_crossing_staples = false;
                     if (!ver_choice.empty()) {
-                        find_ATrail(eg, a_trail, ver_choice, color, shape + "_0");
-                        bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                        find_ATrail(eg, a_trail, ver_choice, (first_color + 1) % 2, shape + "_0");
+                        has_crossing_staples = check_crossing_staples(adjL, a_trail);
                         write_atrail_to_file(a_trail, color, shape + "_0", has_crossing_staples);
                     } //endfor
 
                     // Output vertex stack and covering tree vertices to console
                     cout << endl;
                     cout << "Covering tree found ..." << endl;
-                    cout << "Vertex stack (" << (color ? "red" : "blue") << ") :";
+                    cout << "Vertex stack (" << ((first_color + 1) % 2 ? "red" : "blue") << ") :";
                     for (auto v: ver_stack) {
                         cout << v << " ";
                     } //endfor
                     cout << endl;
-                    cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") :";
+                    cout << "Covering tree vertices (" << ((first_color + 1) % 2 ? "red" : "blue") << ") :";
                     for (auto v: ver_choice) {
                         cout << v << " ";
                     } //endfor
                     cout << endl;
+
+                    int search_count = 0;
+                    // Continue Search if crossing staples found
+                    while (has_crossing_staples) {
+                        ++search_count;
+                        cout << "Continuing search on branch 0 ..." << endl;
+                        int last_vertex = ver_stack[ver_stack.size() - 1];
+                        has_covering_tree = bb_covering_tree(eg, last_vertex, 0, ver_stack, (first_color + 1) % 2, v_order,
+                                                             iterationCount, start, 0, shape + "_0" + "_s" + to_string(search_count), useCheckPoints);
+                        if (has_covering_tree) {
+                            // Covering tree vertices
+                            for (int j = 0; j < ver_stack.size(); ++j) {
+                                ver_choice.push_back(v_order[ver_stack[j]]);
+                            } //endfor
+
+                            // A-trail
+                            if (!ver_choice.empty()) {
+                                find_ATrail(eg, a_trail, ver_choice, (first_color + 1) % 2, shape + "_0" + "_s" + to_string(search_count));
+                                has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                                write_atrail_to_file(a_trail, (first_color + 1) % 2, shape + "_0" + "_s" + to_string(search_count), has_crossing_staples);
+                            } //endif
+
+                            // Output vertex stack and covering tree vertices to console
+                            cout << endl;
+                            cout << "Covering tree found ..." << endl;
+                            cout << "Vertex stack (" << ((first_color + 1) % 2 ? "red" : "blue") << ") :";
+                            for (auto v: ver_stack) {
+                                cout << v << " ";
+                            } //endfor
+                            cout << endl;
+                            cout << "Covering tree vertices (" << ((first_color + 1) % 2 ? "red" : "blue") << ") :";
+                            for (auto v: ver_choice) {
+                                cout << v << " ";
+                            } //endfor
+                            cout << endl;
+                        }
+                        else {
+                            #pragma omp critical
+                            {
+                                cout << "Could not find a-trail without crossing staples on branch 0" << endl;
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         } else {
@@ -263,14 +353,16 @@ int main(int argc, char *argv[]) {
 
                 int ver_stack_initial_count = ver_stack.size();
 
+                bool has_covering_tree;
+
                 // Find covering tree
                 if (cont) {
                     // Start search at next vertex
                     start = chrono::high_resolution_clock::now();
-                    bool has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order,
+                    has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 1, ver_stack, color, v_order,
                                                               iterationCount, start, i, shape, useCheckPoints);
                     if (!has_covering_tree)
-                        bb_covering_tree(eg, log2(branches / 2), 0, ver_stack, color, v_order, iterationCount, start, i,
+                        has_covering_tree = bb_covering_tree(eg, log2(branches / 2), 0, ver_stack, color, v_order, iterationCount, start, i,
                                          shape, useCheckPoints);
 
                     // Clear initial vertex stack if no covering tree found
@@ -286,9 +378,10 @@ int main(int argc, char *argv[]) {
                 } //endfor
 
                 // A-trail
+                bool has_crossing_staples = false;
                 if (!ver_choice.empty()) {
                     find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i));
-                    bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                    has_crossing_staples = check_crossing_staples(adjL, a_trail);
                     write_atrail_to_file(a_trail, color, shape + "_" + to_string(i), has_crossing_staples);
                 } //endif
 
@@ -308,6 +401,57 @@ int main(int argc, char *argv[]) {
                     } //endfor
                     cout << endl;
                 }
+
+                int search_count = 0;
+                // Continue Search if crossing staples found
+                while (has_crossing_staples) {
+                    ++search_count;
+                    #pragma omp critical
+                    {
+                        cout << "Continuing search on branch" << i << " ..." << endl;
+                    }
+                    int last_vertex = ver_stack[ver_stack.size() - 1];
+                    has_covering_tree = bb_covering_tree(eg, last_vertex, 0, ver_stack, color, v_order,
+                                                         iterationCount, start, i, shape + "_" + to_string(i) + "_s" + to_string(search_count), useCheckPoints);
+                    if (has_covering_tree) {
+                        // Covering tree vertices
+                        for (int j = 0; j < ver_stack.size(); ++j) {
+                            ver_choice.push_back(v_order[ver_stack[j]]);
+                        } //endfor
+
+                        // A-trail
+                        if (!ver_choice.empty()) {
+                            find_ATrail(eg, a_trail, ver_choice, color, shape + "_" + to_string(i) + "_s" + to_string(search_count));
+                            has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                            write_atrail_to_file(a_trail, color, shape + "_" + to_string(i) + "_s" + to_string(search_count), has_crossing_staples);
+                        } //endif
+
+                        // Output vertex stack and covering tree vertices to console
+                        #pragma omp critical
+                        {
+                            cout << endl;
+                            cout << "Covering tree found ..." << endl;
+                            cout << "Vertex stack (" << (color ? "red" : "blue") << ") :";
+                            for (auto v: ver_stack) {
+                                cout << v << " ";
+                            } //endfor
+                            cout << endl;
+                            cout << "Covering tree vertices (" << (color ? "red" : "blue") << ") :";
+                            for (auto v: ver_choice) {
+                                cout << v << " ";
+                            } //endfor
+                            cout << endl;
+                        }
+                    }
+                    else {
+                        #pragma omp critical
+                        {
+                            cout << "Could not find a-trail without crossing staples on branch " << i << endl;
+                        }
+                        break;
+                    }
+                }
+
             } //endfor
         } //endif
     }
@@ -345,7 +489,7 @@ int main(int argc, char *argv[]) {
 
             start = chrono::high_resolution_clock::now();
             bool has_covering_tree = bb_covering_tree(eg, v, choice, ver_stack, face_color, v_order,
-                                                          iterationCount, start, branchNum, shape, useCheckPoints);
+                                                          iterationCount, start, branchNum, shape + "_" + to_string(branchNum), useCheckPoints);
 
             // Covering tree vertices
             vector<int> ver_choice;
@@ -354,9 +498,10 @@ int main(int argc, char *argv[]) {
             } //endfor
 
             // A-trail
+            bool has_crossing_staples = false;
             if (!ver_choice.empty()) {
                 find_ATrail(eg, a_trail, ver_choice, face_color, shape + "_" + to_string(branchNum));
-                bool has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                has_crossing_staples = check_crossing_staples(adjL, a_trail);
                 write_atrail_to_file(a_trail, face_color, shape + "_" + to_string(branchNum), has_crossing_staples);
 
             } //endif
@@ -366,17 +511,68 @@ int main(int argc, char *argv[]) {
             {
                 cout << endl;
                 cout << "Covering tree found ..." << endl;
-                cout << "Vertex stack (" << (face_color ? "red" : "blue") << ") branch " << i << ": ";
+                cout << "Vertex stack (" << (face_color ? "red" : "blue") << ") branch " << branchNum << ": ";
                 for (auto v: ver_stack) {
                     cout << v << " ";
                 } //endfor
                 cout << endl;
-                cout << "Covering tree vertices (" << (face_color ? "red" : "blue") << ") branch " << i << ": ";
+                cout << "Covering tree vertices (" << (face_color ? "red" : "blue") << ") branch " << branchNum << ": ";
                 for (auto v: ver_choice) {
                     cout << v << " ";
                 } //endfor
                 cout << endl;
             }
+
+            int search_count = 0;
+            // Continue Search if crossing staples found
+            while (has_crossing_staples) {
+                ++search_count;
+                #pragma omp critical
+                {
+                    cout << "Continuing search on branch" << i << " ..." << endl;
+                }
+                int last_vertex = ver_stack[ver_stack.size() - 1];
+                has_covering_tree = bb_covering_tree(eg, last_vertex, 0, ver_stack, face_color, v_order,
+                                                     iterationCount, start, branchNum, shape + "_" + to_string(branchNum) + "_s" + to_string(search_count), useCheckPoints);
+                if (has_covering_tree) {
+                    // Covering tree vertices
+                    for (int j = 0; j < ver_stack.size(); ++j) {
+                        ver_choice.push_back(v_order[ver_stack[j]]);
+                    } //endfor
+
+                    // A-trail
+                    if (!ver_choice.empty()) {
+                        find_ATrail(eg, a_trail, ver_choice, face_color, shape + "_" + to_string(i) + "_s" + to_string(search_count));
+                        has_crossing_staples = check_crossing_staples(adjL, a_trail);
+                        write_atrail_to_file(a_trail, face_color, shape + "_" + to_string(branchNum) + "_s" + to_string(search_count), has_crossing_staples);
+                    } //endif
+
+                    #pragma omp critical
+                    {
+                        // Output vertex stack and covering tree vertices to console
+                        cout << endl;
+                        cout << "Covering tree found ..." << endl;
+                        cout << "Vertex stack (" << (face_color ? "red" : "blue") << ") :";
+                        for (auto v: ver_stack) {
+                            cout << v << " ";
+                        } //endfor
+                        cout << endl;
+                        cout << "Covering tree vertices (" << (face_color ? "red" : "blue") << ") :";
+                        for (auto v: ver_choice) {
+                            cout << v << " ";
+                        } //endfor
+                        cout << endl;
+                    }
+                }
+                else {
+                    #pragma omp critical
+                    {
+                        cout << "Could not find a-trail without crossing staples on branch " << i << endl;
+                    }
+                    break;
+                }
+            }
+
         } //endfor
     } //endif
 #else
