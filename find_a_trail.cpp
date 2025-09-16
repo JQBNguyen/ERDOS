@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <unordered_map>
 
 #include "cc_embedded_graph.h"
 
@@ -48,26 +49,60 @@ void write_atrail_to_file(vector<Edge>& a_trail, int color, string shape, bool c
     }
 }
 
-bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) {
-    map<int, vector<int>> v_visit_order;
+//bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) {
+//    map<int, vector<int>> v_visit_order;
+//
+//    for (int i = 0; i < a_trail.size(); ++i) {
+//        v_visit_order[a_trail[i].getV1()].push_back(a_trail[i].getID());
+//        v_visit_order[a_trail[i].getV2()].push_back(a_trail[i].getID());
+//    }
+//
+//    for (int i = 0; i < adjL.size(); ++i) {
+//        vector<int> edge_order = v_visit_order[i];
+//        edge_order.insert(edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
+//
+//        auto it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
+//
+//        if (it == edge_order.end()) {
+//            reverse(edge_order.begin(), edge_order.end());
+//            it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
+//            if (it == edge_order.end()) {
+//                return true;
+//            }
+//        }
+//    }
+//
+//    return false;
+//}
 
-    for (int i = 0; i < a_trail.size(); ++i) {
-        v_visit_order[a_trail[i].getV1()].push_back(a_trail[i].getID());
-        v_visit_order[a_trail[i].getV2()].push_back(a_trail[i].getID());
+bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) {
+    vector<unordered_map<int, int>> adjL_in_out;
+
+    // Vertex-edge adjacency list with in-out information
+    for (int i = 0; i < adjL.size(); ++i) {
+        unordered_map<int, int> curr_v;
+        for (int j = 0; j < adjL[i].size(); ++j) {
+            curr_v[adjL[i][j]] = -1; // -1 as placeholder
+        }
+        adjL_in_out.push_back(curr_v);
     }
 
+    // Assign in-out values for each edge in a-trail to the 2 corresponding vertices
+    for (int i = 0; i < a_trail.size(); ++i) {
+        adjL_in_out[a_trail[i].getV1()][a_trail[i].getID()] = 1; // out
+        adjL_in_out[a_trail[i].getV2()][a_trail[i].getID()] = 0; // in
+    }
+
+    // Iterate through adjacency list in order orientation to check in-out pattern
     for (int i = 0; i < adjL.size(); ++i) {
-        vector<int> edge_order = v_visit_order[i];
-        edge_order.insert(edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
-
-        auto it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
-
-        if (it == edge_order.end()) {
-            reverse(edge_order.begin(), edge_order.end());
-            it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
-            if (it == edge_order.end()) {
+        for (int j = 0; j < adjL[i].size() - 1; ++j) {
+            if (adjL_in_out[i][adjL[i][j]] == adjL_in_out[i][adjL[i][j + 1]]) {
                 return true;
             }
+        }
+        // Edge case check for first and last edge in adjacency list order
+        if (adjL_in_out[i][adjL[i][0]] == adjL_in_out[i][adjL[i][adjL[i].size() - 1]]) {
+            return true;
         }
     }
 
