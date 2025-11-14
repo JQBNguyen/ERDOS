@@ -12,20 +12,20 @@ void write_atrail_to_file(vector<Edge>& a_trail, int color, string shape, bool c
     string o = "";
     string o1 = "";
     if (color) {
-        o = "atrail_" + shape + "_red";
-        o1 = "atrail_" + shape + "_red";
+        o = shape + "_red";
+        o1 = shape + "_red";
     } else {
-        o = "atrail_" + shape + "_blue";
-        o1 = "atrail_" + shape + "_blue";
+        o = shape + "_blue";
+        o1 = shape + "_blue";
     } //endif
 
     if (crossing_staples) {
-        o += "_crossing_staples_.txt";
-        o1 += "_crossing_staples_.ntrail";
+        o += "_crossing_staples.txt";
+        o1 += "_crossing_staples.ntrail";
     }
     else {
-        o += "_no_crossing_staples_.txt";
-        o1 += "_no_crossing_staples_.ntrail";
+        o += "_no_crossing_staples.txt";
+        o1 += "_no_crossing_staples.ntrail";
     } //endif
 
     // Write A-trail to output file
@@ -49,32 +49,6 @@ void write_atrail_to_file(vector<Edge>& a_trail, int color, string shape, bool c
     }
 }
 
-//bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) {
-//    map<int, vector<int>> v_visit_order;
-//
-//    for (int i = 0; i < a_trail.size(); ++i) {
-//        v_visit_order[a_trail[i].getV1()].push_back(a_trail[i].getID());
-//        v_visit_order[a_trail[i].getV2()].push_back(a_trail[i].getID());
-//    }
-//
-//    for (int i = 0; i < adjL.size(); ++i) {
-//        vector<int> edge_order = v_visit_order[i];
-//        edge_order.insert(edge_order.end(), v_visit_order[i].begin(), v_visit_order[i].end());
-//
-//        auto it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
-//
-//        if (it == edge_order.end()) {
-//            reverse(edge_order.begin(), edge_order.end());
-//            it = search(edge_order.begin(), edge_order.end(), adjL[i].begin(), adjL[i].end());
-//            if (it == edge_order.end()) {
-//                return true;
-//            }
-//        }
-//    }
-//
-//    return false;
-//}
-
 bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) {
     vector<unordered_map<int, int>> adjL_in_out;
 
@@ -92,22 +66,6 @@ bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) 
         adjL_in_out[a_trail[i].getV1()][a_trail[i].getID()] = 1; // out
         adjL_in_out[a_trail[i].getV2()][a_trail[i].getID()] = 0; // in
     }
-
-    // Iterate through adjacency list in order orientation to check in-out pattern
-    for (int i = 0; i < adjL.size(); ++i) {
-        for (int j = 0; j < adjL[i].size() - 1; ++j) {
-            if (adjL_in_out[i][adjL[i][j]] == adjL_in_out[i][adjL[i][j + 1]]) {
-                return true;
-            }
-        }
-        // Edge case check for first and last edge in adjacency list order
-        if (adjL_in_out[i][adjL[i][0]] == adjL_in_out[i][adjL[i][adjL[i].size() - 1]]) {
-            return true;
-        }
-    }
-
-    return false;
-}
 
 /*
  * Finds A-trail based on given covering tree of graph.
