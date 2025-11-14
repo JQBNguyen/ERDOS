@@ -66,6 +66,7 @@ bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) 
         adjL_in_out[a_trail[i].getV1()][a_trail[i].getID()] = 1; // out
         adjL_in_out[a_trail[i].getV2()][a_trail[i].getID()] = 0; // in
     }
+}
 
 /*
  * Finds A-trail based on given covering tree of graph.
