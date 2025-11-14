@@ -12,10 +12,15 @@ Execution with given arguments:
 Execution with incomplete number of arguments:
 ```
 ./ERDOS <insufficient_arguments...>
+>> Insufficient arguments given.
+>> Sample expected input: ./ERDOS <input_PLY_file> <given_shape_name> <number_of_parallel_branches> <produce_checkpoint_files> <list_of_given_checkpoint_files>(optional).
+>> Proceed with manual input of files and options below.
 >> Please input file path name (provided file should be of PLY format).
 <input_PLY_file_path>
 >> Please input desired shape name for output files (any output files will use this as an identifier).
 <given_shape_name>
+>> Please input number of branches (number of parallel processing branches to speed up covering tree search).
+<number_of_parallel_branches>
 >> Do you want to produce checkpoint files (periodically store covering tree search information to save progress and rerun ERDOS at later times)? (Y/N)
 Y
 >> Are you providing checkpoint files? (Y/N)
@@ -45,8 +50,8 @@ List of output attributes specified in file name:
 
 Sample Output File Names:
 ```
-atrail_tetrahedron_0_blue_no_crossing_staples.txt
-atrail_tritorus_3_red_no_crossing_staples.ntrail
+tetrahedron_0_blue_no_crossing_staples.txt
+tritorus_3_red_no_crossing_staples.ntrail
 ```
 
 ### Checkpoint Output
