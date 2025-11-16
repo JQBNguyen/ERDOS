@@ -67,6 +67,22 @@ bool check_crossing_staples(map<int, vector<int>>& adjL, vector<Edge>& a_trail) 
         adjL_in_out[a_trail[i].getV2()][a_trail[i].getID()] = 0; // in
     }
 
+    // Iterate through adjaceny list in order orientation to check in-out pattern
+    for (int i = 0; i < adjL.size(); ++i) {
+        for (int j = 0; j < adjL[i].size() - 1; ++j) {
+            if (adjL_in_out[i][adjL[i][j]] == adjL_in_out[i][adjL[i][j + 1]]) {
+                return true;
+            }
+        }
+        // Edge case check for first and last edge in adjacency list order
+        if (adjL_in_out[i][adjL[i][0]] == adjL_in_out[i][adjL[i][adjL[i].size() - 1]]) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /*
  * Finds A-trail based on given covering tree of graph.
  *
